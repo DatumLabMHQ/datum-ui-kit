@@ -9,8 +9,9 @@ bin/datum-ui new ytc-2027 --kind site     # the wide shell: top bar, no sidebar
 bin/datum-ui sync client-portal           # copy the kit's files forward into a project
 ```
 
-The template in `templates/app` is the live gallery. Run it and you get the standard on screen: the
-foundations, every component with the rule for when to use it, and five page patterns you can copy.
+The template in `templates/app` is the live gallery, deployed at **https://datum-ui-kit.vercel.app**: the
+foundations, every component with the rule for when to use it, and five page patterns you can copy. Every
+push to `main` redeploys it. Run it locally to copy from it:
 
 ```bash
 cd templates/app && npm install && npm run dev

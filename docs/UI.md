@@ -2,8 +2,8 @@
 
 One standard for every internal and client-facing interface that is not a data dashboard. It is
 shadcn/ui on Base UI, Tailwind v4, Next.js App Router, and the Datum design tokens. The template in
-`templates/app` is the reference: run it and the standard is on screen, live, with the rules beside
-each component.
+`templates/app` is the reference, live at https://datum-ui-kit.vercel.app: the standard on screen, with
+the rule beside each component.
 
 The rule that produced it: build from shadcn, never beside it. The shell is shadcn's sidebar block,
 the pages are its recipes, and everything Datum-specific is either a token in `globals.css` or a small
