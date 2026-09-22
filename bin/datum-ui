@@ -20,6 +20,14 @@ def slugify(s):
     if not s: sys.exit('slug must have letters or numbers in it')
     return s
 
+def ts_string(s):
+    """A single-quoted TypeScript string literal for any text. A title or description is prose, so it can
+    hold an apostrophe ("DDSC's market"), a backslash or a newline; dropped in between bare quotes, the
+    first of those broke site.config.ts. Escape it like a JSON string, but keep the file's single quotes."""
+    s = s.replace('\\', '\\\\').replace("'", "\\'").replace('\n', '\\n').replace('\r', '\\r').replace('\t', '\\t')
+    s = s.replace('\u2028', '\\u2028').replace('\u2029', '\\u2029')
+    return "'" + s + "'"
+
 # Kit files: changed in the kit and copied forward into every project (docs/UI.md ยง8). Everything else
 # in a project is its own. `datum-ui sync <slug>` copies these, reports what changed, and touches
 # nothing else.
@@ -51,9 +59,10 @@ def new(a):
     if dest.exists() and any(dest.iterdir()): sys.exit(f'{dest} exists and is not empty')
     shutil.copytree(TEMPLATE, dest, ignore=IGNORE)
 
-    # The name goes in three places; everything else reads from site.config.ts.
+    # The name goes in two places, site.config.ts and package.json; every page reads it from the config.
+    # The placeholders are replaced with their quotes, so the text is escaped as one TypeScript string.
     cfg = dest / 'site.config.ts'
-    cfg.write_text(cfg.read_text().replace('{{title}}', title).replace('{{description}}', description))
+    cfg.write_text(cfg.read_text().replace("'{{title}}'", ts_string(title)).replace("'{{description}}'", ts_string(description)))
     pkg = dest / 'package.json'
     pkg.write_text(pkg.read_text().replace('"name": "datum-ui-template"', f'"name": "{slug}"'))
 
@@ -61,14 +70,14 @@ def new(a):
     gallery = ['app/(app)/foundations', 'app/(app)/components', 'app/(app)/patterns', 'components/demos']
     if not a.keep_gallery:
         for p in gallery: shutil.rmtree(dest / p, ignore_errors=True) if (dest / p).is_dir() else (dest / p).unlink(missing_ok=True)
-        (dest / 'app/(app)/page.tsx').write_text(HOME.replace('{{title}}', title))
+        (dest / 'app/(app)/page.tsx').write_text(HOME)
         cfg.write_text(re.sub(r"const NAV: NavEntry\[\] = \[.*?\n\];\n", NAV, cfg.read_text(), flags=re.S))
     if a.kind == 'site':
+        # The site's home is a starter of its own, like the app's: the gallery's landing page links back
+        # to gallery pages this project does not have, and a link to a missing page is a console error.
         shutil.rmtree(dest / 'app/(app)', ignore_errors=True)
-        landing = dest / 'app/(site)/landing/page.tsx'
-        if landing.exists():
-            (dest / 'app/(site)/page.tsx').write_text(landing.read_text().replace("export const metadata = { title: 'Landing page' };\n\n", ''))
-            shutil.rmtree(dest / 'app/(site)/landing', ignore_errors=True)
+        (dest / 'app/(site)/page.tsx').write_text(SITE_HOME)
+        if not a.keep_gallery: shutil.rmtree(dest / 'app/(site)/landing', ignore_errors=True)
     else:
         if not a.keep_gallery: shutil.rmtree(dest / 'app/(site)', ignore_errors=True)
 
@@ -82,7 +91,8 @@ NAV = """const NAV: NavEntry[] = [
 ];
 """
 
-HOME = """import { PageHeader } from '@/components/page-header';
+HOME = """import { site } from '@/site.config';
+import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function Home() {
@@ -93,7 +103,7 @@ export default function Home() {
       <div className="px-4 lg:px-6">
         <Card>
           <CardHeader>
-            <CardTitle>{{title}}</CardTitle>
+            <CardTitle>{site.name}</CardTitle>
             <CardDescription>Every card says what it holds and why it matters. Delete this one and build the page.</CardDescription>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
@@ -101,6 +111,36 @@ export default function Home() {
           </CardContent>
         </Card>
       </div>
+    </>
+  );
+}
+"""
+
+SITE_HOME = """import { site } from '@/site.config';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
+const POINTS: [string, string][] = [
+  ['One claim per section', 'A page in this shell is a sequence of sections that each make one point, at about seventy characters a line, with room between them.'],
+  ['One thing to do', 'Every section can point at the same single action. Two competing calls to action halve each other.'],
+  ['The same components', 'This page uses nothing the app shell does not: the same cards, the same tokens, the same rules. Replace these cards and build the page.'],
+];
+
+export default function Home() {
+  return (
+    <>
+      <section className="flex flex-col items-start gap-5">
+        <Badge variant="outline">{site.owner}</Badge>
+        <h1 className="max-w-3xl font-serif text-4xl font-medium leading-[1.1] tracking-tight text-balance md:text-5xl">{site.name}</h1>
+        <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">{site.description}</p>
+      </section>
+      <section className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        {POINTS.map(([title, body]) => (
+          <Card key={title}>
+            <CardHeader><CardTitle>{title}</CardTitle><CardDescription>{body}</CardDescription></CardHeader>
+          </Card>
+        ))}
+      </section>
     </>
   );
 }

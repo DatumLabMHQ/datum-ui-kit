@@ -1,7 +1,9 @@
 name: check
-# Two jobs on every push. The first proves the gallery still typechecks, lints, builds and passes the
-# layout smoke test. The second scaffolds a project with bin/datum-ui and builds that, so the
-# generator cannot rot while the template moves.
+# Three jobs on every push. The first proves the gallery still typechecks, lints, builds and passes the
+# layout smoke test. The other two scaffold a project with bin/datum-ui, one per shell, with an
+# apostrophe in the title and the description (a real scaffold once broke on one), then run
+# `npm run check` and the smoke test against the result. So neither the generator nor either shell can
+# rot while the template moves.
 on:
   push:
     branches: [main]
@@ -29,17 +31,35 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: failure()
         with: { name: playwright-traces, path: templates/app/test-results/, retention-days: 7 }
-  scaffolder:
+  scaffold:
+    name: scaffold (${{ matrix.kind }})
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        kind: [app, site]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: "22" }
-      - name: Scaffold an app and a site
-        run: |
-          DATUM_ROOT=/tmp/scaffold python3 bin/datum-ui new ci-app --title "CI App"
-          DATUM_ROOT=/tmp/scaffold python3 bin/datum-ui new ci-site --kind site --title "CI Site"
-      - name: The generated app builds
-        working-directory: /tmp/scaffold/ci-app
-        run: npm install --no-audit --no-fund && npm run typecheck && npm run lint && npm run build
+      - name: Scaffold a ${{ matrix.kind }} with an apostrophe in its title and its description
+        run: >
+          DATUM_ROOT=/tmp/scaffold python3 bin/datum-ui new ci-${{ matrix.kind }} --kind ${{ matrix.kind }}
+          --title "Datum's CI ${{ matrix.kind }}"
+          --description "How the kit's ${{ matrix.kind }} shell fares when it's scaffolded in CI: an apostrophe in every string, and the checks run against the result."
+      - name: The generated project installs
+        working-directory: /tmp/scaffold/ci-${{ matrix.kind }}
+        run: npm install --no-audit --no-fund
+      - name: The generated project passes npm run check
+        working-directory: /tmp/scaffold/ci-${{ matrix.kind }}
+        run: npm run check
+      - name: The generated project passes the smoke test
+        working-directory: /tmp/scaffold/ci-${{ matrix.kind }}
+        run: npx playwright install --with-deps chromium && npx playwright test
+        env:
+          CI: "true"
+          BASE_URL: http://localhost:3000
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with: { name: playwright-traces-ci-${{ matrix.kind }}, path: /tmp/scaffold/ci-${{ matrix.kind }}/test-results/, retention-days: 7 }
