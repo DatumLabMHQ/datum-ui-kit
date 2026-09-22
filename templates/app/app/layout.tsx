@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono, Source_Serif_4 } from 'next/font/google';
 import './globals.css';
 import { site } from '@/site.config';
+import { brandOf } from '@/lib/brand';
 import { Providers } from '@/components/Providers';
 import { Toaster } from '@/components/ui/sonner';
 
@@ -15,7 +16,7 @@ const serif = Source_Serif_4({ subsets: ['latin'], variable: '--font-source-seri
 export const metadata: Metadata = {
   title: { default: site.name, template: `%s · ${site.name}` },
   description: site.description,
-  icons: { icon: [{ url: '/brand/favicon-32.png', sizes: '32x32' }, { url: '/brand/favicon-64.png', sizes: '64x64' }], apple: '/brand/apple-touch-icon.png' },
+  icons: brandOf(site).icons,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
