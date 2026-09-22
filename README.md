@@ -1,5 +1,7 @@
 # datum-ui-kit
 
+> Part of [Atlas](https://github.com/DatumLabMHQ/atlas), Datum Labs' internal data infrastructure. Start there for how the parts fit together.
+
 How we build interfaces at Datum Labs: shadcn/ui components on the Datum tokens, one shell, one set of
 rules, and the checks that keep them true. One command starts a project.
 
