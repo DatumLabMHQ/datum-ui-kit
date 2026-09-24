@@ -41,6 +41,10 @@ the components wear the Datum look with no per-component styling.
 In markup use the Tailwind names: `bg-card`, `text-muted-foreground`, `border-border`. A Datum token
 with no shadcn name is reached as `text-(--brand-blue)` or `bg-(--green)/10`.
 
+**A client's mark goes in the brand slot, never in a shell.** `brand` in `site.config.ts` names the mark for
+each ground, an optional wordmark and the browser icons; both shells render it through `BrandMark`. Keep a
+project's files outside `public/brand`, which the kit syncs. The default is the Datum mark.
+
 **A sub-brand overrides tokens, never components.** Setnel is the precedent: a different action colour
 and a denser scale, but the same components underneath. Fork `globals.css`, keep everything else.
 

@@ -3,7 +3,6 @@
 // from site.config.ts; an entry with children opens as a Collapsible whose label still goes to the
 // page and whose chevron opens the list. Icons are Phosphor only, named in the config and mapped here.
 import * as React from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -11,6 +10,7 @@ import {
   LayoutIcon, ListChecksIcon, MagnifyingGlassIcon, PaletteIcon, ShieldIcon, SparkleIcon, SquaresFourIcon, TableIcon, TextboxIcon, UsersThreeIcon,
 } from '@phosphor-icons/react';
 import { site } from '@/site.config';
+import { BrandMark } from '@/components/brand-mark';
 import { isActive, NAV_CHILDREN_MAX, type IconMap } from '@/lib/nav';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -32,8 +32,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" className="data-[slot=sidebar-menu-button]:p-1.5!" render={<Link href="/" />}>
-              <Image src="/brand/datum-mark.png" alt="" width={24} height={24} className="size-6 shrink-0 rounded-[6px]" priority />
-              <span className="text-base font-semibold">datum<span className="text-(--brand-blue)">labs</span></span>
+              <BrandMark />
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

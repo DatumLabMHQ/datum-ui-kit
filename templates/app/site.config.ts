@@ -1,6 +1,7 @@
 // The only file most projects need to edit. Name the project, its navigation and the links in the
 // footer. Everything else in the template reads from here, so a new project is this file plus pages.
 import type { NavEntry, NavLink } from '@/lib/nav';
+import { DEFAULT_BRAND, type Brand } from '@/lib/brand';
 
 // `datum-ui new` fills the {{placeholders}}. Until then the template runs as the kit's own gallery
 // under these fallbacks, so it can be opened and judged as it is.
@@ -38,6 +39,10 @@ export const site = {
   nav: NAV,
   // Shown in the footer and the command palette's "Datum" group.
   links: LINKS,
+  // The mark and wordmark in the header or sidebar, and the browser icons. A client-facing project
+  // points these at its own files under public/ (outside public/brand, which the kit syncs) and sets
+  // wordmark to null when the mark carries the name. See lib/brand.ts.
+  brand: DEFAULT_BRAND as Brand,
   // One line in the footer: what a reader should know about this app. Keep it honest.
   footnote: 'Built on the Datum UI kit: shadcn/ui components, Datum tokens, Phosphor icons.',
 };
