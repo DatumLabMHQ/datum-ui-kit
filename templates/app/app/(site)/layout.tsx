@@ -1,6 +1,7 @@
 // The other shell: no sidebar, a top bar and a wide column. For anything a reader sees before they
 // sign in, such as a landing page, a microsite or an event page. `datum-ui new --kind site` keeps
-// this one and drops the app shell.
+// this one and drops the app shell. The column is the `main` container, as in the app shell, so
+// `CardRow` and the `@3xl/main` and `@4xl/main` column queries lay out here too.
 import Link from 'next/link';
 import Image from 'next/image';
 import { site } from '@/site.config';
@@ -21,7 +22,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
           <div className="ml-auto"><ThemeToggle /></div>
         </div>
       </header>
-      <main data-slot="page" className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-16 px-6 py-16">{children}</main>
+      <main data-slot="page" className="@container/main mx-auto flex w-full max-w-6xl flex-1 flex-col gap-16 px-6 py-16">{children}</main>
       <footer className="border-t">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-6 text-xs text-muted-foreground">
           <span>{site.footnote}</span>

@@ -57,7 +57,9 @@ sections; the layout owns the gap between them, so a page never wraps its childr
    divider between them on wide screens and stacked on phones.
 
 The second shell, `app/(site)/layout.tsx`, is for anything a reader sees before they sign in: a top
-bar, a wide column, generous sections, no sidebar. Same tokens, same components.
+bar, a wide column, generous sections, no sidebar. Same tokens, same components. Its `main` is the
+`@container/main` column, as in the app shell, so `CardRow` and the `@3xl/main` and `@4xl/main`
+column queries lay out the same in both shells; a page never needs to know which one it is in.
 
 ## 4. The layout contract
 
@@ -113,11 +115,21 @@ a shell a project deleted on purpose.
 ## 9. Continuous checks
 
 `npm run check` runs typecheck, lint and build. `npm run test:smoke` runs the layout smoke test
-against a dev server, and CI runs both on every push. The smoke test reads the sidebar rather than a
-list of routes, so a project that adds a page gets it covered for free. What it asserts: every page
-returns 200 with an `h1` and no console errors, no number leaks a `NaN` or an `undefined`, the three
-layout rules above, a caption on every table card, the form shows errors only after a submit, dark
-mode is the navy ground, and nothing scrolls sideways on a phone.
+against a dev server, and CI runs both on every push. The smoke test reads the shell rather than a
+list of routes: the sidebar and its sub-lists in the app shell, the header nav plus `/` in the site
+shell. A project on either shell passes it as scaffolded, and a page it adds to the nav is covered for
+free. What it asserts on every route it finds: a 200 with an `h1` and no console errors, no number
+leaks a `NaN` or an `undefined`, the three layout rules above, a caption on every table card, and
+nothing scrolls sideways at phone width. On every shell, dark mode is the navy ground. Two checks
+belong to the gallery and skip themselves where their subject is absent: the command palette opens
+with cmd+k (the app shell's header only), and the form shows errors only after a submit
+(`/patterns/form`, which goes with the gallery).
+
+The kit's own CI runs three jobs. The first takes the gallery through `npm run check` and the smoke
+test. The other two scaffold a project with `bin/datum-ui new`, one per shell, with an apostrophe in
+the title and the description (a real scaffold once broke on one, written unescaped into
+`site.config.ts`), then run `npm run check` and the same smoke test against the result. A change that
+breaks the generator or either shell fails there, not in the next project.
 
 When someone spots a layout fault by eye, the fix goes into the kit and a line goes into this test, so
 the next project cannot repeat it.
