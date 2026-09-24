@@ -36,6 +36,18 @@ async function checkPage(page: Page, path: string) {
   }));
   for (const spread of rows) expect(spread, `${path} card-row bottoms`).toBeLessThanOrEqual(4);
 
+  // A horizontal Tabs list sits above its panel, not beside it.
+  const tabs = await page.$$eval('[data-slot=tabs][data-orientation=horizontal]', (ts) => ts.map((t) => {
+    const list = t.querySelector(':scope > [data-slot=tabs-list]')?.getBoundingClientRect();
+    const panel = Array.from(t.querySelectorAll(':scope > [data-slot=tabs-content]'))
+      .map((p) => p.getBoundingClientRect()).find((r) => r.height > 0);
+    return list && panel ? { gap: Math.round(panel.top - list.bottom), height: list.height } : null;
+  }));
+  for (const t of tabs) if (t) {
+    expect(t.gap, `${path} tabs list above panel`).toBeGreaterThanOrEqual(0);
+    expect(t.height, `${path} tabs list height`).toBeGreaterThan(0);
+  }
+
   // Every table card says what the reader is looking at.
   const cards = page.locator('[data-slot=card]:has(table)');
   for (let i = 0; i < await cards.count(); i++) {
